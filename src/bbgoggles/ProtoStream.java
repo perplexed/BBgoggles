@@ -20,11 +20,11 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import net.rim.blackberry.api.browser.Browser;
-import net.rim.blackberry.api.browser.BrowserSession;
 import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.LabelField;
+import net.rim.device.api.ui.container.MainScreen;
+import net.rim.device.api.browser.field2.*;
 
 public class ProtoStream extends Thread{
 	byte[]responseData = null;
@@ -49,6 +49,10 @@ public class ProtoStream extends Thread{
 	String CSSID = null;
 	String TRAILING_BYTES = null;
 	
+	// Browser hack
+	MainScreen _browserScreen;
+    BrowserFieldConfig _bfConfig;
+    BrowserField _bf2;
 	
 	public ProtoStream(DataInputStream dis) throws IOException {
 		byte[] lenbyte = new byte[5];
@@ -180,7 +184,14 @@ public class ProtoStream extends Thread{
 	
 	public void run(){
 		System.out.println("Starting parse operation...");
-		parseStream(this.responseData);
+		_browserScreen = new MainScreen();
+		_bfConfig = new BrowserFieldConfig();
+	    _bfConfig.setProperty( BrowserFieldConfig.NAVIGATION_MODE, BrowserFieldConfig.NAVIGATION_MODE_POINTER );
+	    _bfConfig.setProperty( BrowserFieldConfig.JAVASCRIPT_ENABLED, Boolean.TRUE );
+	    _bfConfig.setProperty( BrowserFieldConfig.USER_AGENT, "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_1_3 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7E18 Safari/528.16 GoogleMobileApp/0.7.3.5675 GoogleGoggles-iPhone/1.0; gzip" );
+	    _bf2 = new BrowserField(_bfConfig);
+	    _browserScreen.add(_bf2);
+	    parseStream(this.responseData);
 		System.out.println("Finished");
 	}
 	
@@ -356,8 +367,8 @@ public class ProtoStream extends Thread{
 						System.out.println("Got event lock...");
 						((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).add(new LabelField(type + " " + i,LabelField.FOCUSABLE){
 			    	        public boolean navigationClick(int status , int time){
-			    	            BrowserSession bSession = Browser.getDefaultSession();
-			    	            bSession.displayPage(static_image);
+			    	        	_bf2.requestContent(static_image);
+			    	        	UiApplication.getUiApplication().pushModalScreen(_browserScreen);
 			    	            return true;
 			    	        }
 			    	    });
@@ -394,8 +405,8 @@ public class ProtoStream extends Thread{
 						System.out.println("Got event lock, printing successful result...");
 						((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).add(new LabelField(title + " (" + type + ")",LabelField.FOCUSABLE){
 			    	        public boolean navigationClick(int status , int time){
-			    	            BrowserSession bSession = Browser.getDefaultSession();
-			    	            bSession.displayPage(search_url);
+			    	        	_bf2.requestContent(search_url);
+			    	        	UiApplication.getUiApplication().pushModalScreen(_browserScreen);
 			    	            return true;
 			    	        }
 			    	    });
