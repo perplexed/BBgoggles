@@ -16,15 +16,29 @@ along with BBgoggles.  If not, see <http://www.gnu.org/licenses/>.*/
 package bbgoggles;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import javax.microedition.io.Connector;
+import javax.microedition.io.HttpConnection;
+
 import net.rim.device.api.system.Application;
+import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.EncodedImage;
+import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.LabelField;
+import net.rim.device.api.ui.component.StandardTitleBar;
 import net.rim.device.api.ui.container.MainScreen;
+import net.rim.device.api.ui.decor.BackgroundFactory;
+import net.rim.device.api.ui.extension.component.PictureScrollField;
+import net.rim.device.api.ui.extension.component.PictureScrollField.HighlightStyle;
+import net.rim.device.api.ui.extension.component.PictureScrollField.ScrollEntry;
 import net.rim.device.api.browser.field2.*;
+import net.rim.device.api.io.IOUtilities;
 
 public class ProtoStream extends Thread{
 	byte[]responseData = null;
@@ -49,10 +63,8 @@ public class ProtoStream extends Thread{
 	String CSSID = null;
 	String TRAILING_BYTES = null;
 	
-	// Browser hack
-	MainScreen _browserScreen;
-	BrowserFieldConfig _bfConfig;
-	BrowserField _bf2;
+	// ScrollImages
+	ScrollEntry[] entries;
 	
 	public ProtoStream(DataInputStream dis) throws IOException {
 		byte[] lenbyte = new byte[5];
@@ -184,11 +196,6 @@ public class ProtoStream extends Thread{
 	
 	public void run(){
 		System.out.println("Starting parse operation...");
-		_browserScreen = new MainScreen();
-		_bfConfig = new BrowserFieldConfig();
-	    _bfConfig.setProperty( BrowserFieldConfig.NAVIGATION_MODE, BrowserFieldConfig.NAVIGATION_MODE_POINTER );
-	    _bfConfig.setProperty( BrowserFieldConfig.JAVASCRIPT_ENABLED, Boolean.TRUE );
-	    _bfConfig.setProperty( BrowserFieldConfig.USER_AGENT, "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_1_3 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7E18 Safari/528.16 GoogleMobileApp/0.7.3.5675 GoogleGoggles-iPhone/1.0; gzip" );
 	    parseStream(this.responseData);
 		System.out.println("Finished");
 	}
@@ -347,6 +354,44 @@ public class ProtoStream extends Thread{
 		}
 	}
 	
+	public static Bitmap connectServerForImage(String url) {
+
+	      HttpConnection httpConnection = null;
+	      DataOutputStream httpDataOutput = null;
+	      InputStream httpInput = null;
+	      int rc;
+
+	      Bitmap bitmp = null;
+	      try {
+	       httpConnection = (HttpConnection) Connector.open(url);
+	       rc = httpConnection.getResponseCode();
+	       if (rc != HttpConnection.HTTP_OK) {
+	        throw new IOException("HTTP response code: " + rc);
+	       }
+	       httpInput = httpConnection.openInputStream();
+	       InputStream inp = httpInput;
+	       byte[] b = IOUtilities.streamToBytes(inp);
+	       EncodedImage hai = EncodedImage.createEncodedImage(b, 0, b.length);
+	       return hai.getBitmap();
+
+	      } catch (Exception ex) {
+	       System.out.println("URL Bitmap Error........" + ex.getMessage());
+	      } finally {
+	       try {
+	        if (httpInput != null)
+	         httpInput.close();
+	        if (httpDataOutput != null)
+	         httpDataOutput.close();
+	        if (httpConnection != null)
+	         httpConnection.close();
+	       } catch (Exception e) {
+	        e.printStackTrace();
+
+	       }
+	      }
+	      return bitmp;
+	     }
+	
 	public void parseFail(byte[] data){
 		Vector result = getData(data);
 		Enumeration elements = result.elements();
@@ -358,21 +403,24 @@ public class ProtoStream extends Thread{
 			switch(field){
 				case 1:
 					i++;
+					if(i == 1){
+						entries = new ScrollEntry[12];
+					}
 					parseSuccess((byte[]) element[1]);
-					final String type = this.TYPE;
-					final String static_image = this.STATIC_IMAGE;
-					synchronized(Application.getEventLock()){
-						System.out.println("Got event lock...");
-						((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).add(new LabelField(type + " " + i,LabelField.FOCUSABLE){
-			    	        public boolean navigationClick(int status , int time){
-			    	        	_browserScreen.deleteAll();
-			    	    	    _bf2 = new BrowserField(_bfConfig);
-			    	        	_bf2.requestContent(static_image);
-			    	        	_browserScreen.add(_bf2);
-			    	        	UiApplication.getUiApplication().pushScreen(_browserScreen);
-			    	            return true;
-			    	        }
-			    	    });
+					entries[i-1] = new ScrollEntry(connectServerForImage(this.STATIC_IMAGE), this.IMAGE_SITE, this.IMAGE);
+					if (i == 12){
+						PictureScrollField pictureScrollField = new PictureScrollField(150, 100);
+				        pictureScrollField.setData(entries, 0);
+				        pictureScrollField.setHighlightStyle(HighlightStyle.ILLUMINATE_WITH_SHRINK_LENS);
+				        pictureScrollField.setHighlightBorderColor(Color.BLUE);
+				        pictureScrollField.setBackground(BackgroundFactory.createSolidTransparentBackground(Color.WHITE, 150));
+				        pictureScrollField.setLabelsVisible(true); 
+				        LabelField label = new LabelField("No Exact Results");
+				        synchronized(Application.getEventLock()){
+							System.out.println("Got event lock...");
+							((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).add(label);
+							((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).add(pictureScrollField);
+						}
 					}
 					break;
 				case 3:
@@ -388,16 +436,49 @@ public class ProtoStream extends Thread{
 		}	
 	}
 	
+	public MainScreen newBrowserScreen(String url){
+		MainScreen _browserScreen;
+		BrowserFieldConfig _bfConfig;
+		BrowserField _bf2;
+		_browserScreen = new MainScreen();
+		StandardTitleBar myTitleBar = new StandardTitleBar()
+        .addIcon("camera.png")
+        .addTitle("BBGoggles")
+        .addClock()
+        .addNotifications()
+        .addSignalIndicator();
+		myTitleBar.setPropertyValue(StandardTitleBar.PROPERTY_BATTERY_VISIBILITY,
+        StandardTitleBar.BATTERY_VISIBLE_LOW_OR_CHARGING);
+    	_browserScreen.setTitleBar(myTitleBar);
+		_bfConfig = new BrowserFieldConfig();
+	    _bfConfig.setProperty( BrowserFieldConfig.NAVIGATION_MODE, BrowserFieldConfig.NAVIGATION_MODE_POINTER );
+	    _bfConfig.setProperty( BrowserFieldConfig.JAVASCRIPT_ENABLED, Boolean.TRUE );
+	    _bfConfig.setProperty( BrowserFieldConfig.USER_AGENT, "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_1_3 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7E18 Safari/528.16 GoogleMobileApp/0.7.3.5675 GoogleGoggles-iPhone/1.0; gzip" );
+	    _bf2 = new BrowserField(_bfConfig);
+    	_bf2.requestContent(url);
+	    _browserScreen.add(_bf2);
+	    return _browserScreen;
+	}
+	
 	public void parseResult(byte[] data){
 		Vector result = getData(data);
 		Enumeration elements = result.elements();
 		System.out.println("Got the hashtable");
+		int i = 0;
 		while( elements.hasMoreElements() ) {
 			Object[] element = (Object[])elements.nextElement();
 			int field = ((Integer) element[0]).intValue();
 			switch(field){
 				case 1:
+					i++;
 					System.out.println("Parsing a successful result...");
+					if (i==1){
+						LabelField label = new LabelField("Image Results");
+				        synchronized(Application.getEventLock()){
+							System.out.println("Got event lock...");
+							((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).add(label);
+						}
+					}
 					parseSuccess((byte[]) element[1]);
 					final String title = this.TITLE;
 					final String type = this.TYPE;
@@ -406,11 +487,8 @@ public class ProtoStream extends Thread{
 						System.out.println("Got event lock, printing successful result...");
 						((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).add(new LabelField(title + " (" + type + ")",LabelField.FOCUSABLE){
 			    	        public boolean navigationClick(int status , int time){
-			    	        	_browserScreen.deleteAll();
-			    	    	    _bf2 = new BrowserField(_bfConfig);
-			    	        	_bf2.requestContent(search_url);
-							    _browserScreen.add(_bf2);
-			    	        	UiApplication.getUiApplication().pushScreen(_browserScreen);
+			    	        	MainScreen _thebrowserScreen = newBrowserScreen(search_url);
+			    	        	UiApplication.getUiApplication().pushScreen(_thebrowserScreen);
 			    	            return true;
 			    	        }
 			    	    });

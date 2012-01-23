@@ -19,11 +19,21 @@ import javax.microedition.media.Manager;
 import javax.microedition.media.Player;
 import javax.microedition.media.control.VideoControl;
 
+import net.rim.device.api.system.PersistentObject;
+import net.rim.device.api.system.PersistentStore;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.StandardTitleBar;
 import net.rim.device.api.ui.container.MainScreen;
 
 public class CameraScreen extends MainScreen {
+	//PERSISTENT_KEY String is "imageencoding"
+	private static final long PERSISTENT_KEY = 0x438e53a4e668d986L;
+	static PersistentObject store;
+    static {
+    store = PersistentStore.getPersistentObject( PERSISTENT_KEY );
+    }
+    
     /** The camera's video controller */
 	private VideoControl _videoControl;
 
@@ -31,6 +41,16 @@ public class CameraScreen extends MainScreen {
     private Field _videoField;
     
     public CameraScreen(){
+    	StandardTitleBar myTitleBar = new StandardTitleBar()
+        .addIcon("camera_over.png")
+        .addTitle("BBGoggles")
+        .addClock()
+        .addNotifications()
+        .addSignalIndicator();
+		myTitleBar.setPropertyValue(StandardTitleBar.PROPERTY_BATTERY_VISIBILITY,
+        StandardTitleBar.BATTERY_VISIBLE_LOW_OR_CHARGING);
+    	setTitleBar(myTitleBar);
+    	
     	 // Initialise the camera object and video field
         initializeCamera();    
         
@@ -51,13 +71,20 @@ public class CameraScreen extends MainScreen {
         {
             // A null encoding indicates that the camera should
             // use the default snapshot encoding.
-            String encoding = "encoding=jpeg&width=640&height=480";
-            
+        	String _storedEncoding = (String) store.getContents();
+        	
+        	if( _storedEncoding == null )
+        	{
+        		_storedEncoding = "encoding=jpeg&width=640&height=480";
+	        	store.setContents( _storedEncoding );
+	        	store.commit();
+        	}
+ 
             // Retrieve the raw image from the VideoControl and
             // close this screen and send the image for encoding.
-            byte[] image = _videoControl.getSnapshot( encoding );
-            UiApplication.getUiApplication().popScreen(this);
-            new ConnectionThread(image).start();
+            byte[] image = _videoControl.getSnapshot( _storedEncoding );
+            FrozenImage frozenScreen = new FrozenImage(image);
+            UiApplication.getUiApplication().pushScreen(frozenScreen);
         }
         catch(Exception e)
         {
