@@ -472,30 +472,35 @@ public class ProtoStream extends Thread{
 			int field = ((Integer) element[0]).intValue();
 			switch(field){
 				case 1:
-					i++;
-					System.out.println("Parsing a successful result...");
-					if (i==1){
-						LabelField label = new LabelField("Image Results");
-				        synchronized(Application.getEventLock()){
-							System.out.println("Got event lock...");
-							((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).getMainManager().setBackground(BackgroundFactory.createSolidBackground(Color.WHITE)); 
-							((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).add(label);
+					try {
+						i++;
+						System.out.println("Parsing a successful result...");
+						if (i==1){
+							LabelField label = new LabelField("Image Results");
+					        synchronized(Application.getEventLock()){
+								System.out.println("Got event lock...");
+								((ResultsScreen)UiApplication.getUiApplication().getActiveScreen().getScreenBelow()).add(label);
+								((ResultsScreen)UiApplication.getUiApplication().getActiveScreen().getScreenBelow()).getMainManager().setBackground(BackgroundFactory.createSolidBackground(Color.WHITE));
+							}
+						}
+						parseSuccess((byte[]) element[1]);
+						final String title = this.TITLE;
+						final String type = this.TYPE;
+						final String search_url = this.SEARCH_URL;
+						synchronized(Application.getEventLock()){
+							System.out.println("Got event lock, printing successful result...");
+							((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).add(new LabelField(title + " (" + type + ")",LabelField.FOCUSABLE){
+				    	        public boolean navigationClick(int status , int time){
+				    	        	MainScreen _thebrowserScreen = newBrowserScreen(search_url);
+				    	        	UiApplication.getUiApplication().pushScreen(_thebrowserScreen);
+				    	            return true;
+				    	        }
+				    	    });
 						}
 					}
-					parseSuccess((byte[]) element[1]);
-					final String title = this.TITLE;
-					final String type = this.TYPE;
-					final String search_url = this.SEARCH_URL;
-					synchronized(Application.getEventLock()){
-						System.out.println("Got event lock, printing successful result...");
-						((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).add(new LabelField(title + " (" + type + ")",LabelField.FOCUSABLE){
-			    	        public boolean navigationClick(int status , int time){
-			    	        	MainScreen _thebrowserScreen = newBrowserScreen(search_url);
-			    	        	UiApplication.getUiApplication().pushScreen(_thebrowserScreen);
-			    	            return true;
-			    	        }
-			    	    });
-					}
+					catch (Exception e) {
+			        	sendError ("Error: " + e.toString());
+			        }
 					break;
 				case 15705729:
 					System.out.println("Parsing an unsuccessful result...");
@@ -531,4 +536,16 @@ public class ProtoStream extends Thread{
 			}
 		}
 	}
+	
+	public void sendError(String error){
+    	final String errorText = error;
+        //use invokeLater method to pass results back to the main thread
+        UiApplication.getUiApplication().invokeLater(new Runnable() {
+            public void run() {
+                //UiApplication.getUiApplication().popScreen(dialogScreen); //hide wait popup screen
+                //pass results to the callback method of the current screen
+                ((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).errorCallBackMethod(errorText);
+            }
+        });
+    }
 }
