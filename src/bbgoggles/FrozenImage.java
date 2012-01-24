@@ -28,6 +28,7 @@ import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.BitmapField;
+import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.StandardTitleBar;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.util.StringProvider;
@@ -71,7 +72,7 @@ public class FrozenImage extends MainScreen {
 	        	public void run()
 	        	{
 	                Date date = new Date(); 
-	        		saveImage("file:///SDCard/"+String.valueOf(date.hashCode())+".jpg", image);
+	        		saveImage(System.getProperty("fileconn.dir.photos")+String.valueOf(date.hashCode())+".jpg", image);
 	            }
 	        };
 	        addMenuItem(uploadPicture);
@@ -121,6 +122,7 @@ public class FrozenImage extends MainScreen {
 		   try {
 		    if (null != os)
 		     os.close();
+		    Dialog.inform("Image saved succesfully.");
 		    if (null != fconn)
 		     fconn.close();
 		   } catch (IOException e) {

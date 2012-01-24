@@ -18,13 +18,13 @@ package bbgoggles;
 import javax.microedition.media.Manager;
 import javax.microedition.media.Player;
 import javax.microedition.media.control.VideoControl;
-
 import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.PersistentStore;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.StandardTitleBar;
 import net.rim.device.api.ui.container.MainScreen;
+
 
 public class CameraScreen extends MainScreen {
 	//PERSISTENT_KEY String is "imageencoding"
@@ -118,6 +118,22 @@ public class CameraScreen extends MainScreen {
                 _videoField = (Field) _videoControl.initDisplayMode (VideoControl.USE_GUI_PRIMITIVE, "net.rim.device.api.ui.Field");
                 _videoControl.setDisplayFullScreen(true);
                 _videoControl.setVisible(true);
+                
+              //Retrieve the list of valid encodings.
+                /*String encodingString = System.getProperty("video.snapshot.encodings");
+
+                //Extract the properties as an array of words.
+                String[] properties = StringUtilities.stringToKeywords(encodingString);
+
+                //The list of encodings;
+                Vector encodingList = new Vector();
+
+                //Strings representing the four properties of an encoding as
+                //returned by System.getProperty().
+                String encoding = "encoding";
+                String width = "width";
+                String height = "height";
+                String quality = "quality";*/
             }
 
             // Set the player to the STARTED state (see Player javadoc)

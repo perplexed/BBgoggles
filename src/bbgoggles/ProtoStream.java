@@ -27,6 +27,7 @@ import javax.microedition.io.HttpConnection;
 
 import net.rim.device.api.system.Application;
 import net.rim.device.api.system.Bitmap;
+import net.rim.device.api.system.Display;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.UiApplication;
@@ -409,16 +410,17 @@ public class ProtoStream extends Thread{
 					parseSuccess((byte[]) element[1]);
 					entries[i-1] = new ScrollEntry(connectServerForImage(this.STATIC_IMAGE), this.IMAGE_SITE, this.IMAGE);
 					if (i == 12){
-						PictureScrollField pictureScrollField = new PictureScrollField(150, 100);
+						PictureScrollField pictureScrollField = new PictureScrollField((Display.getWidth()/4)*3,(Display.getHeight()/5)*3);
 				        pictureScrollField.setData(entries, 0);
 				        pictureScrollField.setHighlightStyle(HighlightStyle.ILLUMINATE_WITH_SHRINK_LENS);
-				        pictureScrollField.setHighlightBorderColor(Color.BLUE);
-				        pictureScrollField.setBackground(BackgroundFactory.createSolidTransparentBackground(Color.WHITE, 150));
+				        pictureScrollField.setHighlightBorderColor(Color.BLACK);
+				        pictureScrollField.setBackground(BackgroundFactory.createSolidBackground(Color.BLACK));
 				        pictureScrollField.setLabelsVisible(true); 
-				        LabelField label = new LabelField("No Exact Results");
+				        //LabelField label = new LabelField("No Exact Results");
 				        synchronized(Application.getEventLock()){
 							System.out.println("Got event lock...");
-							((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).add(label);
+							//((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).add(label);
+							((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).getMainManager().setBackground(BackgroundFactory.createSolidBackground(Color.BLACK)); 
 							((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).add(pictureScrollField);
 						}
 					}
@@ -442,7 +444,7 @@ public class ProtoStream extends Thread{
 		BrowserField _bf2;
 		_browserScreen = new MainScreen();
 		StandardTitleBar myTitleBar = new StandardTitleBar()
-        .addIcon("camera.png")
+        .addIcon("camera_over.png")
         .addTitle("BBGoggles")
         .addClock()
         .addNotifications()
@@ -476,6 +478,7 @@ public class ProtoStream extends Thread{
 						LabelField label = new LabelField("Image Results");
 				        synchronized(Application.getEventLock()){
 							System.out.println("Got event lock...");
+							((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).getMainManager().setBackground(BackgroundFactory.createSolidBackground(Color.WHITE)); 
 							((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).add(label);
 						}
 					}

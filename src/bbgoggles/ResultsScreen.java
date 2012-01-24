@@ -16,6 +16,7 @@ along with BBgoggles.  If not, see <http://www.gnu.org/licenses/>.*/
 package bbgoggles;
 
 import net.rim.device.api.system.Application;
+import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.UiApplication;
@@ -23,6 +24,7 @@ import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.component.StandardTitleBar;
 import net.rim.device.api.ui.container.MainScreen;
+import net.rim.device.api.ui.decor.BackgroundFactory;
 import net.rim.device.api.util.StringProvider;
 
 public class ResultsScreen extends MainScreen {
@@ -37,8 +39,7 @@ public class ResultsScreen extends MainScreen {
         .addSignalIndicator();
 		myTitleBar.setPropertyValue(StandardTitleBar.PROPERTY_BATTERY_VISIBILITY,
         StandardTitleBar.BATTERY_VISIBLE_LOW_OR_CHARGING);
-    	setTitleBar(myTitleBar);
-        //getMainManager().setBackground(BackgroundFactory.createLinearGradientBackground(0x0099CCFF, 0x0099CCFF, 0x00336699,0x00336699));  
+    	setTitleBar(myTitleBar); 
         final Screen camScreen = new CameraScreen();
         StringProvider takePictureText = new StringProvider("Capture Image");
         final MenuItem takePicture = new MenuItem(takePictureText,110,11)
@@ -57,6 +58,7 @@ public class ResultsScreen extends MainScreen {
     //this method will be called from the connection thread if unsuccessful
     public void errorCallBackMethod(String responseData){
     	deleteAll();
+    	getMainManager().setBackground(BackgroundFactory.createSolidBackground(Color.WHITE));
     	add(new LabelField("Unsuccessful Request"));
     	//add(new SeparatorField());
     	add(new RichTextField(responseData));
