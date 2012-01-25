@@ -31,6 +31,7 @@ import net.rim.device.api.system.Display;
 import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.StandardTitleBar;
 import net.rim.device.api.ui.container.MainScreen;
@@ -43,6 +44,8 @@ import net.rim.device.api.io.IOUtilities;
 
 public class ProtoStream extends Thread{
 	byte[]responseData = null;
+	ResultsScreen resScreen;
+	WaitPopupScreen dialogScreen;
 	
 	// Result data
 	String TITLE = null;
@@ -67,7 +70,8 @@ public class ProtoStream extends Thread{
 	// ScrollImages
 	ScrollEntry[] entries;
 	
-	public ProtoStream(DataInputStream dis) throws IOException {
+	public ProtoStream(DataInputStream dis, WaitPopupScreen popupScreen) throws IOException {
+		this.dialogScreen = popupScreen;
 		byte[] lenbyte = new byte[5];
 		System.out.println("Made 5 byte array.");
 		dis.readFully(lenbyte, 0, 5);
@@ -197,7 +201,19 @@ public class ProtoStream extends Thread{
 	
 	public void run(){
 		System.out.println("Starting parse operation...");
-	    parseStream(this.responseData);
+		synchronized(Application.getEventLock()){
+			dialogScreen.changeText("Interpreting response...");
+		}
+		resScreen = new ResultsScreen();
+	    try {
+	    	parseStream(this.responseData);
+	    } catch (Exception e){
+	    	sendError(e.getMessage());
+	    }
+	    synchronized(Application.getEventLock()){
+	    	UiApplication.getUiApplication().popScreen(dialogScreen);
+	    	UiApplication.getUiApplication().pushScreen(resScreen);
+	    }
 		System.out.println("Finished");
 	}
 	
@@ -405,6 +421,9 @@ public class ProtoStream extends Thread{
 				case 1:
 					i++;
 					if(i == 1){
+						synchronized(Application.getEventLock()){
+							dialogScreen.changeText("No direct image matches...");
+						}
 						entries = new ScrollEntry[12];
 					}
 					parseSuccess((byte[]) element[1]);
@@ -417,12 +436,8 @@ public class ProtoStream extends Thread{
 				        pictureScrollField.setBackground(BackgroundFactory.createSolidBackground(Color.BLACK));
 				        pictureScrollField.setLabelsVisible(true); 
 				        //LabelField label = new LabelField("No Exact Results");
-				        synchronized(Application.getEventLock()){
-							System.out.println("Got event lock...");
-							//((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).add(label);
-							((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).getMainManager().setBackground(BackgroundFactory.createSolidBackground(Color.BLACK)); 
-							((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).add(pictureScrollField);
-						}
+				        resScreen.getMainManager().setBackground(BackgroundFactory.createSolidBackground(Color.BLACK)); 
+				        resScreen.add(pictureScrollField);
 					}
 					break;
 				case 3:
@@ -476,27 +491,27 @@ public class ProtoStream extends Thread{
 						i++;
 						System.out.println("Parsing a successful result...");
 						if (i==1){
-							LabelField label = new LabelField("Image Results");
-					        synchronized(Application.getEventLock()){
-								System.out.println("Got event lock...");
-								((ResultsScreen)UiApplication.getUiApplication().getActiveScreen().getScreenBelow()).add(label);
-								((ResultsScreen)UiApplication.getUiApplication().getActiveScreen().getScreenBelow()).getMainManager().setBackground(BackgroundFactory.createSolidBackground(Color.WHITE));
+							synchronized(Application.getEventLock()){
+								dialogScreen.changeText("Getting image matches...");
 							}
+							LabelField label = new LabelField("Image Results");
+							resScreen.getMainManager().setBackground(BackgroundFactory.createSolidBackground(Color.WHITE));
+					        resScreen.add(label);
 						}
 						parseSuccess((byte[]) element[1]);
 						final String title = this.TITLE;
 						final String type = this.TYPE;
 						final String search_url = this.SEARCH_URL;
-						synchronized(Application.getEventLock()){
-							System.out.println("Got event lock, printing successful result...");
-							((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).add(new LabelField(title + " (" + type + ")",LabelField.FOCUSABLE){
-				    	        public boolean navigationClick(int status , int time){
+						System.out.println("Got event lock, printing successful result...");
+						resScreen.add(new LabelField(title + " (" + type + ")",LabelField.FOCUSABLE){
+				    	    public boolean navigationClick(int status , int time){
+				    	    	synchronized(Application.getEventLock()){
 				    	        	MainScreen _thebrowserScreen = newBrowserScreen(search_url);
 				    	        	UiApplication.getUiApplication().pushScreen(_thebrowserScreen);
 				    	            return true;
 				    	        }
-				    	    });
-						}
+				    	    }
+				    	});
 					}
 					catch (Exception e) {
 			        	sendError ("Error: " + e.toString());
@@ -505,11 +520,8 @@ public class ProtoStream extends Thread{
 				case 15705729:
 					System.out.println("Parsing an unsuccessful result...");
 					parseFail((byte[]) element[1]);
-					final String response_time = this.RESPONSE_TIME;
-					synchronized(Application.getEventLock()){
-						System.out.println("Got event lock, printing response time...");
-						((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).add(new LabelField(response_time));
-					}
+					//final String response_time = this.RESPONSE_TIME;
+					//resScreen.add(new LabelField(response_time));
 					break;
 				default:
 			}
@@ -538,13 +550,13 @@ public class ProtoStream extends Thread{
 	}
 	
 	public void sendError(String error){
-    	final String errorText = error;
+		final String errorText = error;
         //use invokeLater method to pass results back to the main thread
         UiApplication.getUiApplication().invokeLater(new Runnable() {
             public void run() {
-                //UiApplication.getUiApplication().popScreen(dialogScreen); //hide wait popup screen
+                UiApplication.getUiApplication().popScreen(dialogScreen); //hide wait popup screen
                 //pass results to the callback method of the current screen
-                ((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).errorCallBackMethod(errorText);
+                Dialog.alert("Error: "+errorText);
             }
         });
     }

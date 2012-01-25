@@ -16,15 +16,11 @@ along with BBgoggles.  If not, see <http://www.gnu.org/licenses/>.*/
 package bbgoggles;
 
 import net.rim.device.api.system.Application;
-import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.MenuItem;
 import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.UiApplication;
-import net.rim.device.api.ui.component.LabelField;
-import net.rim.device.api.ui.component.RichTextField;
 import net.rim.device.api.ui.component.StandardTitleBar;
 import net.rim.device.api.ui.container.MainScreen;
-import net.rim.device.api.ui.decor.BackgroundFactory;
 import net.rim.device.api.util.StringProvider;
 
 public class ResultsScreen extends MainScreen {
@@ -46,8 +42,8 @@ public class ResultsScreen extends MainScreen {
         {
         	public void run()
         	{
-	        	deleteAll();
 	        	synchronized(Application.getEventLock()){
+	        		UiApplication.getUiApplication().popScreen(UiApplication.getUiApplication().getActiveScreen());
 	        		UiApplication.getUiApplication().pushScreen(camScreen);
 	        	}
         	}
@@ -55,14 +51,14 @@ public class ResultsScreen extends MainScreen {
         addMenuItem(takePicture);
     }
      
-    //this method will be called from the connection thread if unsuccessful
+    /*this method will be called from the connection thread if unsuccessful
     public void errorCallBackMethod(String responseData){
     	deleteAll();
     	getMainManager().setBackground(BackgroundFactory.createSolidBackground(Color.WHITE));
     	add(new LabelField("Unsuccessful Request"));
     	//add(new SeparatorField());
     	add(new RichTextField(responseData));
-    }
+    }*/
     
     protected boolean onSavePrompt()
     {

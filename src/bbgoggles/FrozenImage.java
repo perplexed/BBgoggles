@@ -34,7 +34,7 @@ import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.util.StringProvider;
 
 public class FrozenImage extends MainScreen {
-	public FrozenImage(final byte[] image){
+	public FrozenImage(final byte[] image, final CameraScreen camScreen){
 		StandardTitleBar myTitleBar = new StandardTitleBar()
         .addIcon("camera_over.png")
         .addTitle("BBGoggles")
@@ -53,8 +53,8 @@ public class FrozenImage extends MainScreen {
 	        {
 	        	public void run()
 	        	{
-	        		UiApplication.getUiApplication().popScreen(UiApplication.getUiApplication().getActiveScreen().getScreenBelow());
-	                UiApplication.getUiApplication().popScreen(UiApplication.getUiApplication().getActiveScreen());
+	        		UiApplication.getUiApplication().popScreen(UiApplication.getUiApplication().getActiveScreen());
+	        		UiApplication.getUiApplication().popScreen(camScreen);
 	        		new ConnectionThread(image).start();
 	            }
 	        };
@@ -82,8 +82,7 @@ public class FrozenImage extends MainScreen {
 		catch(Exception e)
         {
         	UiApplication.getUiApplication().popScreen(this);
-        	UiApplication.getUiApplication().popScreen(UiApplication.getUiApplication().getActiveScreen());
-        	((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).errorCallBackMethod("Error freezing image (" + e.getMessage() + ").");
+        	Dialog.alert("Error manipulating image (" + e.getMessage() + ").");
         }  
 	}
 	

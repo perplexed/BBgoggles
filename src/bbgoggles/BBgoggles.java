@@ -31,9 +31,7 @@ public class BBgoggles extends UiApplication
     public BBgoggles()
     {        
         // Push a screen onto the UI stack for rendering.
-    	ResultsScreen thescreen = new ResultsScreen();
     	CameraScreen camerascreen = new CameraScreen();
-        pushScreen(thescreen);
         pushScreen(camerascreen);
     }
 }

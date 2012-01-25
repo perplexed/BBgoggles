@@ -22,6 +22,7 @@ import net.rim.device.api.system.PersistentObject;
 import net.rim.device.api.system.PersistentStore;
 import net.rim.device.api.ui.Field;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.Dialog;
 import net.rim.device.api.ui.component.StandardTitleBar;
 import net.rim.device.api.ui.container.MainScreen;
 
@@ -61,7 +62,7 @@ public class CameraScreen extends MainScreen {
         // If not, display an error message to the user
         else {
         	UiApplication.getUiApplication().popScreen(this);
-        	((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).errorCallBackMethod("Error connecting to camera.");
+        	Dialog.alert("Error connecting to camera.");
         }
     }
     
@@ -83,13 +84,13 @@ public class CameraScreen extends MainScreen {
             // Retrieve the raw image from the VideoControl and
             // close this screen and send the image for encoding.
             byte[] image = _videoControl.getSnapshot( _storedEncoding );
-            FrozenImage frozenScreen = new FrozenImage(image);
+            FrozenImage frozenScreen = new FrozenImage(image, this);
             UiApplication.getUiApplication().pushScreen(frozenScreen);
         }
         catch(Exception e)
         {
         	UiApplication.getUiApplication().popScreen(this);
-        	((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).errorCallBackMethod("Error taking picture (" + e.getMessage() + ").");
+        	Dialog.alert("Error taking picture (" + e.getMessage() + ").");
         }  
     }
     
@@ -141,7 +142,7 @@ public class CameraScreen extends MainScreen {
         }
         catch(Exception e){
         	UiApplication.getUiApplication().popScreen(this);
-        	((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).errorCallBackMethod("Error taking picture (" + e.getMessage() + ").");
+        	Dialog.alert("Error taking picture (" + e.getMessage() + ").");
         }
     }
     

@@ -20,15 +20,14 @@ import java.io.DataOutputStream;
 import java.util.Random;
 import javax.microedition.io.HttpConnection;
 import net.rim.device.api.io.transport.ConnectionFactory;
-import net.rim.device.api.system.Application;
-import net.rim.device.api.ui.Screen;
 import net.rim.device.api.ui.UiApplication;
+import net.rim.device.api.ui.component.Dialog;
 
 public class ConnectionThread extends Thread {
     byte[] IMAGE;
     String CSSID;
     String URL = "http://www.google.com/goggles/container_proto?cssid=";
-    final Screen dialogScreen = new WaitPopupScreen();
+    final WaitPopupScreen dialogScreen = new WaitPopupScreen();
  
     public ConnectionThread(byte[] IMAGE) {
         this.IMAGE = IMAGE; //IMAGE URL
@@ -94,10 +93,7 @@ public class ConnectionThread extends Thread {
             	try {
                     dis = new DataInputStream(connection.openInputStream());
                     System.out.println("Connection to response open.");
-                    new ProtoStream(dis).start();
-                    synchronized(Application.getEventLock()){
-                    	UiApplication.getUiApplication().popScreen(dialogScreen);
-                    }
+                    new ProtoStream(dis, dialogScreen).start();
             	}
             	catch (Exception e) {
             		sendError ("Error: Could not read result (" + e.toString() + ").");
@@ -135,7 +131,7 @@ public class ConnectionThread extends Thread {
             public void run() {
                 UiApplication.getUiApplication().popScreen(dialogScreen); //hide wait popup screen
                 //pass results to the callback method of the current screen
-                ((ResultsScreen)UiApplication.getUiApplication().getActiveScreen()).errorCallBackMethod(errorText);
+                Dialog.alert("Error: "+errorText);
             }
         });
     }
