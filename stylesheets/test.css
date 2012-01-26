@@ -20,28 +20,18 @@ a:hover {
 }
  
 .container{
-  background: rgba(255, 255, 255, 0.4);
+  background: #cccccc;
   margin-top: 30px;
   padding-left: 20px;
   padding-right: 20px;
-}
-header {
-  padding: 0 10px;
-  overflow: hidden;
-}
-h1 {
-  margin: 0;
 }
  
 #navigation ul, ul.entries {
   list-style-type: none;
 }
-navigation li a {
+
+#navigation li a {
   float: left;
-  margin: 5px;
-}
-.content {
-  padding: 10px;
 }
  
 ul.entries li {
