@@ -1,6 +1,6 @@
 body {
   font: 16px/1.5 verdana, helvetica-neue, helvetica, arial, san-serif;
-  background: #ffffff;
+  background: #cccccc;
   color: #000000;
   padding: 0;
   margin: 0;
@@ -20,7 +20,7 @@ a:hover {
 }
  
 .container{
-  background: #cccccc;
+  background: #ffffff;
   margin-top: 30px;
   padding-left: 20px;
   padding-right: 20px;
@@ -31,7 +31,7 @@ a:hover {
 }
 
 #navigation li a {
-  float: left;
+  float: right;
 }
  
 ul.entries li {
