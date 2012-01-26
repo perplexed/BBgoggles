@@ -35,11 +35,7 @@ a:hover {
 }
  
 #navigation ul li {
-  position: relative;
-  margin: 20px auto;
   padding: 20px;
-  background: #000000;
-  width: 600px;
 }
  
 #navigation  ul a {
