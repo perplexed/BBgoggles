@@ -16,19 +16,10 @@ along with BBgoggles.  If not, see <http://www.gnu.org/licenses/>.*/
 package bbgoggles;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Vector;
-
-import javax.microedition.io.Connector;
-import javax.microedition.io.HttpConnection;
-
 import net.rim.device.api.system.Application;
-import net.rim.device.api.system.Bitmap;
-import net.rim.device.api.system.Display;
-import net.rim.device.api.system.EncodedImage;
 import net.rim.device.api.ui.Color;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.Dialog;
@@ -36,11 +27,7 @@ import net.rim.device.api.ui.component.LabelField;
 import net.rim.device.api.ui.component.StandardTitleBar;
 import net.rim.device.api.ui.container.MainScreen;
 import net.rim.device.api.ui.decor.BackgroundFactory;
-import net.rim.device.api.ui.extension.component.PictureScrollField;
-import net.rim.device.api.ui.extension.component.PictureScrollField.HighlightStyle;
-import net.rim.device.api.ui.extension.component.PictureScrollField.ScrollEntry;
 import net.rim.device.api.browser.field2.*;
-import net.rim.device.api.io.IOUtilities;
 
 public class ProtoStream extends Thread{
 	byte[]responseData = null;
@@ -68,7 +55,7 @@ public class ProtoStream extends Thread{
 	String TRAILING_BYTES = null;
 	
 	// ScrollImages
-	ScrollEntry[] entries;
+	boolean success = false;
 	
 	public ProtoStream(DataInputStream dis, WaitPopupScreen popupScreen) throws IOException {
 		this.dialogScreen = popupScreen;
@@ -205,14 +192,40 @@ public class ProtoStream extends Thread{
 			dialogScreen.changeText("Interpreting response...");
 		}
 		resScreen = new ResultsScreen();
-	    try {
-	    	parseStream(this.responseData);
-	    } catch (Exception e){
-	    	sendError(e.getMessage());
-	    }
-	    synchronized(Application.getEventLock()){
-	    	UiApplication.getUiApplication().popScreen(dialogScreen);
-	    	UiApplication.getUiApplication().pushScreen(resScreen);
+		parseStream(this.responseData);
+	    if (success == true){
+	    	synchronized(Application.getEventLock()){
+		    	UiApplication.getUiApplication().popScreen(dialogScreen.getScreenBelow());
+		    	UiApplication.getUiApplication().popScreen(dialogScreen);
+		    	UiApplication.getUiApplication().pushScreen(resScreen);
+	    	}
+	    } else {
+	    	synchronized(Application.getEventLock()){
+		    	UiApplication.getUiApplication().popScreen(dialogScreen);
+	    	}
+	    	final int[] result = new int[1];
+		    UiApplication.getUiApplication().invokeAndWait(new Runnable() {
+		    	  public void run() {
+		    		  result[0] = Dialog.ask(Dialog.D_YES_NO, "No image matches found. Would you like to view similar images?");
+		    	  }
+		    });
+		    if(result[0] == Dialog.YES){
+				UiApplication.getUiApplication().invokeAndWait(new Runnable() {
+			    	  public void run() {
+			    		  	resScreen.loadImages();
+			    	  }
+				});
+			   		synchronized(Application.getEventLock()){
+			   				UiApplication.getUiApplication().popScreen(UiApplication.getUiApplication().getActiveScreen());
+			    			UiApplication.getUiApplication().pushScreen(resScreen);
+			    	}
+			 } else {
+			   		CameraScreen camScreen = new CameraScreen();
+			   		synchronized(Application.getEventLock()){
+			   				UiApplication.getUiApplication().popScreen(UiApplication.getUiApplication().getActiveScreen());
+				    		UiApplication.getUiApplication().pushScreen(camScreen);
+			    	}
+			}
 	    }
 		System.out.println("Finished");
 	}
@@ -371,74 +384,17 @@ public class ProtoStream extends Thread{
 		}
 	}
 	
-	public static Bitmap connectServerForImage(String url) {
-
-	      HttpConnection httpConnection = null;
-	      DataOutputStream httpDataOutput = null;
-	      InputStream httpInput = null;
-	      int rc;
-
-	      Bitmap bitmp = null;
-	      try {
-	       httpConnection = (HttpConnection) Connector.open(url);
-	       rc = httpConnection.getResponseCode();
-	       if (rc != HttpConnection.HTTP_OK) {
-	        throw new IOException("HTTP response code: " + rc);
-	       }
-	       httpInput = httpConnection.openInputStream();
-	       InputStream inp = httpInput;
-	       byte[] b = IOUtilities.streamToBytes(inp);
-	       EncodedImage hai = EncodedImage.createEncodedImage(b, 0, b.length);
-	       return hai.getBitmap();
-
-	      } catch (Exception ex) {
-	       System.out.println("URL Bitmap Error........" + ex.getMessage());
-	      } finally {
-	       try {
-	        if (httpInput != null)
-	         httpInput.close();
-	        if (httpDataOutput != null)
-	         httpDataOutput.close();
-	        if (httpConnection != null)
-	         httpConnection.close();
-	       } catch (Exception e) {
-	        e.printStackTrace();
-
-	       }
-	      }
-	      return bitmp;
-	     }
-	
 	public void parseFail(byte[] data){
 		Vector result = getData(data);
 		Enumeration elements = result.elements();
 		System.out.println("Got the hashtable");
-		int i = 0;
 		while( elements.hasMoreElements() ) {
 			Object[] element = (Object[])elements.nextElement();
 			int field = ((Integer) element[0]).intValue();
 			switch(field){
 				case 1:
-					i++;
-					if(i == 1){
-						synchronized(Application.getEventLock()){
-							dialogScreen.changeText("No direct image matches...");
-						}
-						entries = new ScrollEntry[12];
-					}
 					parseSuccess((byte[]) element[1]);
-					entries[i-1] = new ScrollEntry(connectServerForImage(this.STATIC_IMAGE), this.IMAGE_SITE, this.IMAGE);
-					if (i == 12){
-						PictureScrollField pictureScrollField = new PictureScrollField((Display.getWidth()/4)*3,(Display.getHeight()/5)*3);
-				        pictureScrollField.setData(entries, 0);
-				        pictureScrollField.setHighlightStyle(HighlightStyle.ILLUMINATE_WITH_SHRINK_LENS);
-				        pictureScrollField.setHighlightBorderColor(Color.BLACK);
-				        pictureScrollField.setBackground(BackgroundFactory.createSolidBackground(Color.BLACK));
-				        pictureScrollField.setLabelsVisible(true); 
-				        //LabelField label = new LabelField("No Exact Results");
-				        resScreen.getMainManager().setBackground(BackgroundFactory.createSolidBackground(Color.BLACK)); 
-				        resScreen.add(pictureScrollField);
-					}
+					resScreen.addImage(this.STATIC_IMAGE, this.IMAGE_SITE, this.IMAGE);
 					break;
 				case 3:
 					this.RESPONSE_TIME = new String((byte[]) element[1]);
@@ -453,8 +409,8 @@ public class ProtoStream extends Thread{
 		}	
 	}
 	
-	public MainScreen newBrowserScreen(String url){
-		MainScreen _browserScreen;
+	public MainScreen newBrowserScreen(final String url){
+		final MainScreen _browserScreen;
 		BrowserFieldConfig _bfConfig;
 		BrowserField _bf2;
 		_browserScreen = new MainScreen();
@@ -472,6 +428,20 @@ public class ProtoStream extends Thread{
 	    _bfConfig.setProperty( BrowserFieldConfig.JAVASCRIPT_ENABLED, Boolean.TRUE );
 	    _bfConfig.setProperty( BrowserFieldConfig.USER_AGENT, "Mozilla/5.0 (iPhone; U; CPU iPhone OS 3_1_3 like Mac OS X; en-us) AppleWebKit/528.18 (KHTML, like Gecko) Version/4.0 Mobile/7E18 Safari/528.16 GoogleMobileApp/0.7.3.5675 GoogleGoggles-iPhone/1.0; gzip" );
 	    _bf2 = new BrowserField(_bfConfig);
+	    /*BrowserFieldListener listener = new BrowserFieldListener() {
+	        public void documentLoaded(BrowserField browserField, Document document) throws Exception
+	        {
+	        	String newurl = document.getBaseURI();
+	        	if (!url.equalsIgnoreCase(newurl)){
+	        		BrowserSession bSession = Browser.getDefaultSession();
+	        		synchronized(Application.getEventLock()){
+	        			UiApplication.getUiApplication().popScreen(_browserScreen);
+	        		}
+	        		bSession.displayPage(newurl);
+	        	}
+	        }
+	    };
+	    _bf2.addListener( listener );*/
     	_bf2.requestContent(url);
 	    _browserScreen.add(_bf2);
 	    return _browserScreen;
@@ -491,6 +461,7 @@ public class ProtoStream extends Thread{
 						i++;
 						System.out.println("Parsing a successful result...");
 						if (i==1){
+							success = true;
 							synchronized(Application.getEventLock()){
 								dialogScreen.changeText("Getting image matches...");
 							}

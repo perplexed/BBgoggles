@@ -46,14 +46,13 @@ public class FrozenImage extends MainScreen {
     	setTitleBar(myTitleBar);
 		try {
 			EncodedImage _encodedImage = EncodedImage.createEncodedImage(image, 0, image.length, "image/jpeg");
-			_encodedImage = sizeImage(_encodedImage, Display.getWidth(), Display.getHeight());
+			_encodedImage = sizeImage(_encodedImage, Display.getWidth(), Display.getHeight()-myTitleBar.getHeight());
 	        add(new BitmapField(_encodedImage.getBitmap()));
 	        StringProvider uploadPictureText = new StringProvider("Upload Image");
 	        final MenuItem uploadPicture = new MenuItem(uploadPictureText,110,11)
 	        {
 	        	public void run()
 	        	{
-	        		UiApplication.getUiApplication().popScreen(UiApplication.getUiApplication().getActiveScreen());
 	        		UiApplication.getUiApplication().popScreen(camScreen);
 	        		new ConnectionThread(image).start();
 	            }
@@ -86,8 +85,7 @@ public class FrozenImage extends MainScreen {
         }  
 	}
 	
-	public EncodedImage sizeImage(EncodedImage image, int width, 
-			  int height) {
+	public EncodedImage sizeImage(EncodedImage image, int width, int height) {
 			  EncodedImage result = null;
 
 			  int currentWidthFixed32 = Fixed32.toFP(image.getWidth());

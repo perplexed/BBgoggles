@@ -20,6 +20,7 @@ import java.io.DataOutputStream;
 import java.util.Random;
 import javax.microedition.io.HttpConnection;
 import net.rim.device.api.io.transport.ConnectionFactory;
+import net.rim.device.api.system.Application;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.Dialog;
 
@@ -75,6 +76,9 @@ public class ConnectionThread extends Thread {
     }
     
     public void sendData(){
+    	synchronized(Application.getEventLock()){
+			dialogScreen.changeText("Sending image to server...");
+		}
     	HttpConnection connection = null;
         DataOutputStream out = null;
 		DataInputStream dis = null;
