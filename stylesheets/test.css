@@ -19,9 +19,7 @@ a:hover {
   text-decoration: underline;
 }
  
-#main {
-  width: 960px;
-  margin: 0 auto;
+#container{
   background: rgba(255, 255, 255, 0.4);
 }
 header {
@@ -32,10 +30,10 @@ h1 {
   margin: 0;
 }
  
-nav ul, ul.entries {
+#navigation ul, ul.entries {
   list-style-type: none;
 }
-nav li a {
+navigation li a {
   float: left;
   margin: 5px;
 }
@@ -68,7 +66,7 @@ ul.entries a:hover {
   color: #fff;
 }
  
-footer {
+#footer {
   font-size: 0.65em;
   text-align: center;
 }
