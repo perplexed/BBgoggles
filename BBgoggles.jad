@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+RIM-COD-Module-Name: BBgoggles
+RIM-COD-Module-Dependencies: net_rim_cldc,net_rim_networkapi,net_rim_bb_browser_field2_api,net_rim_ui_extension
+MIDlet-Jar-Size: 55740
+MIDlet-1: BBgoggles,bbgoggles/camera_over.png,
+RIM-COD-Creation-Time: 1327533044
+MIDlet-Jar-URL: BBgoggles.jar
+RIM-COD-URL: BBgoggles.cod
+RIM-COD-SHA1: fd 04 e9 5c 46 7e 57 3a f6 82 38 e0 73 9e 9a ea 01 83 f8 e5
+RIM-COD-Size: 27208
+MicroEdition-Configuration: CLDC-1.1
+MIDlet-Version: 1.0
+MIDlet-Name: BBgoggles
+MIDlet-Vendor: <unknown>
+MicroEdition-Profile: MIDP-2.0
+RIM-MIDlet-Flags-1: 0
