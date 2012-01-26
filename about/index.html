@@ -1,0 +1,6 @@
+---
+layout: base
+---
+<h1>Jekyll test</h1>
+
+<p>Test</p>
