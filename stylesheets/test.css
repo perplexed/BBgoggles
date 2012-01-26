@@ -10,7 +10,7 @@ ul {
   padding: 0;
 }
 a {
-  color: #ccc;
+  color: #000000;
   text-decoration: none;
 }
  
@@ -21,12 +21,12 @@ a:hover {
  
 .container{
   background: #ffffff;
-  margin-top: 30px;
+  margin-top: 15px;
   padding-left: 20px;
   padding-right: 20px;
 }
  
-#navigation ul, ul.entries {
+#navigation ul {
   list-style-type: none;
 }
 
@@ -34,7 +34,7 @@ a:hover {
   float: right;
 }
  
-ul.entries li {
+#navigation ul li {
   position: relative;
   margin: 20px auto;
   padding: 20px;
@@ -42,20 +42,10 @@ ul.entries li {
   width: 600px;
 }
  
-ul.entries img {
-  width: 600px;
-}
- 
-ul.entries li h3 {
-  position: absolute;
-  bottom: -18px;
-  left: 17px;
-  font-size: 2em;
-}
-ul.entries a {
+#navigation  ul a {
   color: #000000;
 }
-ul.entries a:hover {
+#navigation  ul a:hover {
   color: #fff;
 }
  
