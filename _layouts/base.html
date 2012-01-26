@@ -1,11 +1,32 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>Test</title>
+<<title> {% if page.title %} {{ page.title }} | {% endif %} John Doe, Photographer </title>
+  <link rel="stylesheet" href="/stylesheets/test.css" />
 </head>
 <body>
-<div class="container">  
-{{ content }}
-</div>
+ 
+  <div id="main">
+ 
+    <header>
+      <h1> John Doe Photograghy </h1>
+    <header>
+ 
+    <nav role="navigation">
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/portfolio/">Download</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/contact">Contact</a></li>
+      </ul>
+    </nav>
+ 
+    {{ content }}
+ 
+    <footer>
+      <p>@copy; BBgoggles 2012 | Source available under the LGPL.</p>
+    </footer>
+ 
+  </div>
 </body>
 </html>
