@@ -210,12 +210,18 @@ public class ProtoStream extends Thread{
 		    	  }
 		    });
 		    if(result[0] == Dialog.YES){
+		    	WaitPopupScreen waitScreen = new WaitPopupScreen();
+		    	waitScreen.changeText("Loading similar images...");
+		    	synchronized(Application.getEventLock()){
+		    		UiApplication.getUiApplication().pushScreen(waitScreen);
+		    	}
 				UiApplication.getUiApplication().invokeAndWait(new Runnable() {
 			    	  public void run() {
 			    		  	resScreen.loadImages();
 			    	  }
 				});
 			   		synchronized(Application.getEventLock()){
+			   				UiApplication.getUiApplication().popScreen(waitScreen);
 			   				UiApplication.getUiApplication().popScreen(UiApplication.getUiApplication().getActiveScreen());
 			    			UiApplication.getUiApplication().pushScreen(resScreen);
 			    	}
