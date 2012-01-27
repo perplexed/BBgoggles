@@ -68,7 +68,11 @@ a:hover {
 
 #maincontent {
   padding-top: 17px;
-  min-height: 400px;
+}
+
+#screenshots {
+  background: url(../images/screenshots.png) top left no-repeat;
+  height: 286px;
 }
  
 #footer {
