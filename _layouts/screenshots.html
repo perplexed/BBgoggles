@@ -35,7 +35,6 @@ window.addEvent('domready',function(){
 	});
 </script>
 <script type="text/javascript">
-
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-28739536-1']);
   _gaq.push(['_trackPageview']);
@@ -45,7 +44,12 @@ window.addEvent('domready',function(){
     ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
-
+  
+  (function() {
+    var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+    po.src = 'https://apis.google.com/js/plusone.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+  })();
 </script>
 </head>  
 <body>
@@ -54,7 +58,7 @@ window.addEvent('domready',function(){
 		<h1 id="BBgoggles">BBgoggles</h1>
     </div>
 	<div id="subheader" class="span-14 last">
-		<h3>An open source BlackBerry client for Google Goggles.</h3>
+		<h3>An open source BlackBerry client for Google Goggles.</h3><g:plusone annotation="inline"></g:plusone>
 	</div>
 	<hr class="silent" />
 	<div id="navigation" class="span-24 last">
