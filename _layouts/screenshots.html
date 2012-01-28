@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />  
+<title>{{ page.title }}</title>
+<!-- Framework CSS -->  
+<link rel="stylesheet" href="stylesheets/screen.css" type="text/css" media="screen, projection" />  
+<link rel="stylesheet" href="stylesheets/print.css" type="text/css" media="print" />  
+<!--[if IE]><link rel="stylesheet" href="blueprint/ie.css" type="text/css" media="screen, projection" /><![endif]--> 
+<link rel="stylesheet" href="stylesheets/test.css" type="text/css" />
+<link rel="stylesheet" href="stylesheets/noobslide.css" type="text/css" />
+<script type="text/javascript" src="js/mootools-1.2-core.js"></script>
+<script type="text/javascript" src="js/_class.noobSlide.packed.js"></script>
+<meta name="content" content="BBgoggles is an open source BlackBerry client for Google Goggles." />
+<meta name="keywords" content="BBgoggles, BlackBerry, Google, Goggles." />
+<script type="text/javascript">
+window.addEvent('domready',function(){		
+		//SAMPLE 7
+		var startItem = 3; //or   0   or any
+		var thumbs_mask7 = $('thumbs_mask7').setStyle('left',(startItem*60-568)+'px').set('opacity',0.8);
+		var fxOptions7 = {property:'left',duration:1000, transition:Fx.Transitions.Back.easeOut, wait:false}
+		var thumbsFx = new Fx.Tween(thumbs_mask7,fxOptions7);
+		var nS7 = new noobSlide({
+			box: $('box7'),
+			items: [0,1,2,3,4,5,6,7],
+			handles: $$('#thumbs_handles7 span'),
+			fxOptions: fxOptions7,
+			onWalk: function(currentItem){
+				thumbsFx.start(currentItem*60-568);
+			},
+			startItem: startItem
+		});
+		//walk to first with fx
+		nS7.walk(0);
+	});
+</script>
+</head>  
+<body>
+<div class="container">
+	<div id="header" class="span-10 last">
+		<h1 id="BBgoggles">BBgoggles</h1>
+    </div>
+	<div id="subheader" class="span-14 last">
+		<h3>An open source BlackBerry client for Google Goggles.</h3>
+	</div>
+	<hr class="silent" />
+	<div id="navigation" class="span-24 last">
+		<ul>
+			<li><a href="./">Home</a></li>
+			<li><a href="./about.html">About</a></li>
+			<li><a href="./screens.html">Screenshots</a></li>
+			<li><a href="./FAQ.html">FAQ</a></li>
+			<li><a href="./download.html">Download</a></li>
+			<li><a href="http://github.com/perplexed/BBgoggles/wiki">Wiki</a></li>
+			<li><a href="https://github.com/perplexed/BBgoggles/issues">Issues</a></li>
+			<li><a href="https://github.com/perplexed/BBgoggles/">Source</a></li>
+		</ul>
+    </div>	
+	<hr class="silent" />
+	<div id="maincontent" class="span-24 last">
+		{{ content }}
+	</div>	
+	<hr />
+	<div id="footer"  class="span-24 last">
+		<p>&copy; BBgoggles 2012 | Source available under the <a href="http://www.gnu.org/licenses/">GPL</a>.</p>
+	</div>
+</div>
+</body>
+</html>
